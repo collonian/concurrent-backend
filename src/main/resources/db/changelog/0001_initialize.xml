@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.10.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+
+    <changeSet id="0001" author="collonian">
+        <createTable tableName="product">
+            <column name="product_id" type="bigint"> <!-- auto-increment -->
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="title" type="varchar(1000)">
+                <constraints nullable="false" />
+            </column>
+            <column name="total_investing_amount" type="bigint">
+                <constraints nullable="false" />
+            </column>
+            <column name="started_at" type="${datetimeType}" />
+            <column name="finished_at" type="${datetimeType}" />
+        </createTable>
+        <createTable tableName="user">
+            <column name="user_id" type="bigint"> <!-- auto-increment -->
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <!-- TODO: add columns for user -->
+        </createTable>
+
+        <createTable tableName="investment">
+            <column name="id" type="${uuidType}" >
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="product_id" type="bigint" >
+                <constraints nullable="false" />
+            </column>
+            <column name="user_id" type="bigint" >
+                <constraints nullable="false" />
+            </column>
+            <column name="investing_amount" type="bigint" >
+                <constraints nullable="false" />
+            </column>
+            <column name="created_at" type="${datetimeType}" />
+        </createTable>
+
+        <createTable tableName="investment_event">
+            <column name="id" type="${uuidType}" >
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="product_id" type="bigint" />
+            <column name="user_id" type="bigint" />
+            <column name="investing_amount" type="bigint" />
+            <column name="created_at" type="${datetimeType}" />
+        </createTable>
+        <createIndex tableName="investment_event" indexName="idx_investment_event_01">
+            <column name="product_id" />
+            <column name="created_at" />
+            <column name="investing_amount" />
+        </createIndex>
+    </changeSet>
+    <changeSet id="0001_data_user" author="collonian" context="dev">
+        <insert tableName="user">
+            <column name="user_id" value="1" />
+        </insert>
+        <insert tableName="user">
+            <column name="user_id" value="2" />
+        </insert>
+        <insert tableName="user">
+            <column name="user_id" value="3" />
+        </insert>
+        <insert tableName="user">
+            <column name="user_id" value="4" />
+        </insert>
+    </changeSet>
+
+    <changeSet id="0001_data_product" author="collonian" context="dev" dbms="h2" >
+        <insert tableName="product">
+            <column name="product_id" value="1" />
+            <column name="title" value="first" />
+            <column name="total_investing_amount" value="10000" />
+            <column name="started_at" valueComputed="DATEADD('DAY', -5, ${now})" />
+            <column name="finished_at" valueComputed="DATEADD('DAY', 3, ${now})" />
+        </insert>
+        <insert tableName="product">
+            <column name="product_id" value="2" />
+            <column name="title" value="second" />
+            <column name="total_investing_amount" value="20000" />
+            <column name="started_at" valueComputed="DATEADD('DAY', -3, ${now})" />
+            <column name="finished_at" valueComputed="DATEADD('DAY', 2, ${now})" />
+        </insert>
+        <insert tableName="product">
+            <column name="product_id" value="3" />
+            <column name="title" value="third" />
+            <column name="total_investing_amount" value="30000" />
+            <column name="started_at" valueComputed="DATEADD('DAY', -10, ${now})" />
+            <column name="finished_at" valueComputed="DATEADD('DAY', -5, ${now})" />
+        </insert>
+        <insert tableName="product">
+            <column name="product_id" value="4" />
+            <column name="title" value="4 title" />
+            <column name="total_investing_amount" value="40000" />
+            <column name="started_at" valueComputed="DATEADD('DAY', -8, ${now})" />
+            <column name="finished_at" valueComputed="DATEADD('DAY', -5, ${now})" />
+        </insert>
+        <insert tableName="product">
+            <column name="product_id" value="5" />
+            <column name="title" value="5 title" />
+            <column name="total_investing_amount" value="50000" />
+            <column name="started_at" valueComputed="DATEADD('DAY', -5, ${now})" />
+            <column name="finished_at" valueComputed="DATEADD('DAY', -3, ${now})" />
+        </insert>
+        <insert tableName="product">
+            <column name="product_id" value="6" />
+            <column name="title" value="6 title" />
+            <column name="total_investing_amount" value="200" />
+            <column name="started_at" valueComputed="DATEADD('DAY', 4, ${now})" />
+            <column name="finished_at" valueComputed="DATEADD('DAY', 5, ${now})" />
+        </insert>
+    </changeSet>
+    <changeSet id="0001_data_product" author="collonian" context="dev" dbms="mysql" >
+        <insert tableName="product">
+            <column name="product_id" value="1" />
+            <column name="title" value="first" />
+            <column name="total_investing_amount" value="10000" />
+            <column name="started_at" valueComputed="DATE_ADD(${now}, INTERVAL -5 DAY)" />
+            <column name="finished_at" valueComputed="DATE_ADD(${now}, INTERVAL 3 DAY)" />
+        </insert>
+        <insert tableName="product">
+            <column name="product_id" value="2" />
+            <column name="title" value="second" />
+            <column name="total_investing_amount" value="20000" />
+            <column name="started_at" valueComputed="DATE_ADD(${now}, INTERVAL -3 DAY)" />
+            <column name="finished_at" valueComputed="DATE_ADD(${now}, INTERVAL 2 DAY)" />
+        </insert>
+        <insert tableName="product">
+            <column name="product_id" value="3" />
+            <column name="title" value="third" />
+            <column name="total_investing_amount" value="30000" />
+            <column name="started_at" valueComputed="DATE_ADD(${now}, INTERVAL -10 DAY)" />
+            <column name="finished_at" valueComputed="DATE_ADD(${now}, INTERVAL -5 DAY)" />
+        </insert>
+        <insert tableName="product">
+            <column name="product_id" value="4" />
+            <column name="title" value="4 title" />
+            <column name="total_investing_amount" value="40000" />
+            <column name="started_at" valueComputed="DATE_ADD(${now}, INTERVAL -8 DAY)" />
+            <column name="finished_at" valueComputed="DATE_ADD(${now}, INTERVAL -5 DAY)" />
+        </insert>
+        <insert tableName="product">
+            <column name="product_id" value="5" />
+            <column name="title" value="5 title" />
+            <column name="total_investing_amount" value="50000" />
+            <column name="started_at" valueComputed="DATE_ADD(${now}, INTERVAL -5 DAY)" />
+            <column name="finished_at" valueComputed="DATE_ADD(${now}, INTERVAL -3 DAY)" />
+        </insert>
+        <insert tableName="product">
+            <column name="product_id" value="6" />
+            <column name="title" value="6 title" />
+            <column name="total_investing_amount" value="200" />
+            <column name="started_at" valueComputed="DATE_ADD(${now}, INTERVAL 4 DAY)" />
+            <column name="finished_at" valueComputed="DATE_ADD(${now}, INTERVAL 5 DAY)" />
+        </insert>
+    </changeSet>
+
+
+    <changeSet id="0001_data_investment" author="collonian" context="dev">
+        <insert tableName="investment">
+            <column name="id" value="uuid-1" />
+            <column name="product_id" value="1" />
+            <column name="user_id" value="1" />
+            <column name="investing_amount" value="100" />
+            <column name="created_at" value="${now}" />
+        </insert>
+        <insert tableName="investment">
+            <column name="id" value="uuid-2" />
+            <column name="product_id" value="1" />
+            <column name="user_id" value="2" />
+            <column name="investing_amount" value="100" />
+            <column name="created_at" value="${now}" />
+        </insert>
+        <insert tableName="investment">
+            <column name="id" value="uuid-3" />
+            <column name="product_id" value="2" />
+            <column name="user_id" value="1" />
+            <column name="investing_amount" value="100" />
+            <column name="created_at" value="${now}" />
+        </insert>
+        <insert tableName="investment">
+            <column name="id" value="uuid-4" />
+            <column name="product_id" value="3" />
+            <column name="user_id" value="1" />
+            <column name="investing_amount" value="100" />
+            <column name="created_at" value="${now}" />
+        </insert>
+        <insert tableName="investment">
+            <column name="id" value="uuid-5" />
+            <column name="product_id" value="3" />
+            <column name="user_id" value="2" />
+            <column name="investing_amount" value="100" />
+            <column name="created_at" value="${now}" />
+        </insert>
+        <insert tableName="investment">
+            <column name="id" value="uuid-6" />
+            <column name="product_id" value="2" />
+            <column name="user_id" value="3" />
+            <column name="investing_amount" value="200" />
+            <column name="created_at" value="${now}" />
+        </insert>
+        <insert tableName="investment">
+            <column name="id" value="uuid-7" />
+            <column name="product_id" value="3" />
+            <column name="user_id" value="3" />
+            <column name="investing_amount" value="100" />
+            <column name="created_at" value="${now}" />
+        </insert>
+        <insert tableName="investment">
+            <column name="id" value="uuid-8" />
+            <column name="product_id" value="4" />
+            <column name="user_id" value="3" />
+            <column name="investing_amount" value="500" />
+            <column name="created_at" value="${now}" />
+        </insert>
+        <insert tableName="investment">
+            <column name="id" value="uuid-9" />
+            <column name="product_id" value="4" />
+            <column name="user_id" value="3" />
+            <column name="investing_amount" value="1300" />
+            <column name="created_at" value="${now}" />
+        </insert>
+        <insert tableName="investment">
+            <column name="id" value="uuid-10" />
+            <column name="product_id" value="4" />
+            <column name="user_id" value="3" />
+            <column name="investing_amount" value="1000" />
+            <column name="created_at" value="${now}" />
+        </insert>
+    </changeSet>
+</databaseChangeLog>

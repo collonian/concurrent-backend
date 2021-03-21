@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.example.demo.repository.mybatis.mapper.InvestmentMapper">
+    <sql id="investmentColumns">
+        investment.id,
+        investment.product_id,
+        investment.user_id,
+        investment.investing_amount,
+        investment.created_at,
+        product.title,
+        product.total_investing_amount
+    </sql>
+
+    <select id="findByUserId" resultType="com.example.demo.service.investment.vo.Investment">
+        SELECT
+            <include refid="investmentColumns"/>
+        FROM investment INNER JOIN product ON investment.product_id = product.product_id
+        WHERE
+            investment.user_id = #{userId}
+        ORDER BY investment.created_at
+        LIMIT #{page.limit} OFFSET #{page.offset}
+    </select>
+
+    <select id="findById" resultType="com.example.demo.service.investment.vo.Investment">
+        SELECT
+            <include refid="investmentColumns"/>
+        FROM investment INNER JOIN product ON investment.product_id = product.product_id
+        WHERE
+            investment.id = #{investmentId}
+    </select>
+
+    <select id="countByUserId" resultType="java.lang.Integer">
+        SELECT
+            COUNT(1)
+        FROM investment
+        WHERE
+            user_id = #{userId}
+    </select>
+
+    <insert id="markInvestment">
+        INSERT INTO investment (
+            id,
+            product_id,
+            user_id,
+            investing_amount,
+            created_at
+        ) VALUES (
+            #{investment.id},
+            #{investment.productId},
+            #{investment.userId},
+            #{investment.investingAmount},
+            now()
+        )
+    </insert>
+    <insert id="markInvestmentEvent">
+        INSERT INTO investment_event (
+            id,
+            product_id,
+            user_id,
+            investing_amount,
+            created_at
+        ) VALUES (
+            #{investment.id},
+            #{investment.productId},
+            #{investment.userId},
+            #{investment.investingAmount},
+            now()
+        )
+    </insert>
+    <select id="isInvestmentAccepted" resultType="java.lang.Boolean">
+        <![CDATA[
+        SELECT
+            COALESCE(SUM(investing_amount), 0) <= (
+                    SELECT total_investing_amount
+                    FROM product
+                    WHERE product_id = #{investment.productId}
+                )
+        FROM investment_event
+        WHERE
+            product_id = #{investment.productId}
+            AND created_at <= (
+                    SELECT created_at
+                    FROM investment_event
+                    WHERE id = #{investment.id}
+                )
+        ]]>
+    </select>
+</mapper>

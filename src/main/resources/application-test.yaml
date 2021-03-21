@@ -1,0 +1,8 @@
+spring:
+  profiles: dev
+  liquibase:
+    contexts: dev
+  datasource:
+    url: jdbc:h2:mem:demo
+    username: sa
+    password:

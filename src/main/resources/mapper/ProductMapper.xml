@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.example.demo.repository.mybatis.mapper.ProductMapper">
+    <sql id="productColumns">
+        product.product_id,
+        product.title,
+        product.total_investing_amount,
+        product.started_at,
+        product.finished_at,
+        (
+            SELECT COALESCE(COUNT(1), 0)
+            FROM investment
+            WHERE investment.product_id = product.product_id
+        ) collected_count,
+        (
+            SELECT COALESCE(SUM(investing_amount), 0)
+            FROM investment
+            WHERE investment.product_id = product.product_id
+        ) collected_investing_amount
+    </sql>
+    <select id="findInvestable" resultType="com.example.demo.service.product.vo.Product">
+        SELECT
+            <include refid="productColumns" />
+        FROM product
+        <![CDATA[
+        WHERE
+            product.started_at <= #{now}
+        AND #{now} <= product.finished_at
+        LIMIT #{page.limit} OFFSET #{page.offset}
+        ]]>
+    </select>
+    <select id="countInvestable" resultType="java.lang.Integer">
+        <![CDATA[
+        SELECT
+            count(1)
+        FROM product
+        WHERE
+            product.started_at <= #{now}
+        AND #{now} <= product.finished_at
+        ]]>
+    </select>
+
+    <select id="findByProductId" resultType="com.example.demo.service.product.vo.Product">
+        SELECT
+            <include refid="productColumns" />
+        FROM product
+        WHERE
+            product.product_id = #{productId}
+    </select>
+</mapper>
