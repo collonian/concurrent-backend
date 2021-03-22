@@ -40,7 +40,7 @@ public class InvestmentService {
     }
 
     @Transactional(isolation = Isolation.READ_UNCOMMITTED, propagation = Propagation.REQUIRES_NEW)
-    public boolean requestInvestment(InvestmentParam investment) {
+    public boolean tryInvestment(InvestmentParam investment) {
         InvestmentEvent event = InvestmentEvent.from(investment);
         investmentMapper.markInvestmentEvent(event);
         boolean accepted = investmentMapper.isInvestmentAccepted(event);

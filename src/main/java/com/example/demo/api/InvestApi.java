@@ -35,7 +35,7 @@ public class InvestApi {
         }
         investmentService.validateInvestment(investmentParam);
 
-        boolean accepted = investmentService.requestInvestment(investmentParam);
+        boolean accepted = investmentService.tryInvestment(investmentParam);
         if(!accepted) {
             throw new InvalidInvestmentProblem(InvestmentError.EXCEED_LIMIT);
         }

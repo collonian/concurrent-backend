@@ -70,28 +70,28 @@ class InvestmentServiceTest {
     }
 
     @Test
-    public void shouldNotMarkInvertEvent_whenRequestInvestment_givenAcceptableRequest() {
+    public void shouldNotMarkInvertEvent_whenTryInvestment_givenAcceptableRequest() {
         // given
         when(investmentMapper.isInvestmentAccepted(any()))
                 .thenReturn(true);
 
         // when
         InvestmentParam param = InvestmentParam.create(BigDecimal.ONE, BigDecimal.TEN, new BigDecimal("255"));
-        investmentService.requestInvestment(param);
+        investmentService.tryInvestment(param);
 
         // then
         verify(investmentMapper).isInvestmentAccepted(any());
         verify(investmentMapper).markInvestmentEvent(any());
     }
     @Test
-    public void shouldMarkInvertEvent_whenRequestInvestment_givenUnacceptableRequest() {
+    public void shouldMarkInvertEvent_whenTryInvestment_givenUnacceptableRequest() {
         // given
         when(investmentMapper.isInvestmentAccepted(any()))
                 .thenReturn(false);
 
         // when
         InvestmentParam param = InvestmentParam.create(BigDecimal.ONE, BigDecimal.TEN, new BigDecimal("255"));
-        investmentService.requestInvestment(param);
+        investmentService.tryInvestment(param);
 
         // then
         verify(investmentMapper).isInvestmentAccepted(any());

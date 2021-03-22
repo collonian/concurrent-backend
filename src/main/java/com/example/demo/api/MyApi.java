@@ -25,7 +25,7 @@ public class MyApi {
     }
 
     @GetMapping(path="/investments")
-    public InvestmentList getInvestments(
+    public InvestmentList queryMyInvestments(
             @AuthenticationPrincipal User user,
             @RequestParam(value = "offset", defaultValue = "0") @Min(0) int offset,
             @RequestParam(value = "limit", defaultValue = "20") @Min(1) @Max(100) int limit

@@ -1,9 +1,6 @@
 package com.example.demo.api;
 
 import com.example.demo.api.config.JacksonConfig;
-import com.example.demo.api.config.exception.DemoExceptionHandler;
-import com.example.demo.service.investment.InvalidInvestmentProblem;
-import com.example.demo.service.investment.InvestmentError;
 import com.example.demo.service.investment.InvestmentService;
 import com.example.demo.service.investment.vo.Investment;
 import com.example.demo.service.investment.vo.InvestmentParam;
@@ -27,7 +24,6 @@ import org.springframework.test.web.servlet.ResultActions;
 import java.math.BigDecimal;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -79,7 +75,7 @@ class InvestApiTest {
     @Test
     public void shouldThrowExceedLimit_whenInvest_givenExeedLimitInvest() throws Exception {
         // given
-        when(investmentService.requestInvestment(any()))
+        when(investmentService.tryInvestment(any()))
                 .thenReturn(false);
 
         // when
@@ -103,7 +99,7 @@ class InvestApiTest {
     @Test
     public void shouldSucceed_whenInvest_givenNormalInvestment() throws Exception {
         // given
-        when(investmentService.requestInvestment(any()))
+        when(investmentService.tryInvestment(any()))
                 .thenReturn(true);
         when(investmentService.markInvestment(any()))
                 .thenReturn(Investment.create(
