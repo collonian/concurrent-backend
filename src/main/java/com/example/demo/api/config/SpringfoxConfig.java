@@ -2,11 +2,9 @@ package com.example.demo.api.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import springfox.documentation.builders.ParameterBuilder;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.builders.RequestParameterBuilder;
-import springfox.documentation.schema.ModelRef;
 import springfox.documentation.service.ParameterType;
 import springfox.documentation.service.RequestParameter;
 import springfox.documentation.spi.DocumentationType;
@@ -21,7 +19,7 @@ public class SpringfoxConfig {
     public Docket api() {
 
         return new Docket(DocumentationType.SWAGGER_2)
-                .globalRequestParameters(Collections.singletonList(authorizationHeader()))
+                .globalRequestParameters(Collections.singletonList(userIdHeader()))
                 .select()
                 .apis(RequestHandlerSelectors.any())
                 .paths(PathSelectors.any())
@@ -30,10 +28,10 @@ public class SpringfoxConfig {
                 ;
     }
 
-    private RequestParameter authorizationHeader() {
+    private RequestParameter userIdHeader() {
         return new RequestParameterBuilder()
-                .name("X-USER-ID")
-                .description("Authorization Header")
+                .name(HttpHeaderAuthenticationFilter.USER_ID_HEADER)
+                .description("User authentication header")
                 .in(ParameterType.HEADER)
                 .required(true)
                 .build();

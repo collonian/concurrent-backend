@@ -17,18 +17,19 @@ import java.math.BigDecimal;
 import java.util.Collections;
 
 public class HttpHeaderAuthenticationFilter extends OncePerRequestFilter {
+    public static final String USER_ID_HEADER = "X-USER-ID";
+
     @Autowired
     private UserService userService;
 
-    private final String headerKey = "X-USER-ID";
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
             @Nullable HttpServletResponse response,
             @Nullable FilterChain filterChain
     ) throws ServletException, IOException {
-        String userId = request.getHeader(headerKey);
-        if(null != userId && SecurityContextHolder.getContext().getAuthentication() == null) {
+        String userId = request.getHeader(USER_ID_HEADER);
+        if(null != userId && null == SecurityContextHolder.getContext().getAuthentication()) {
             userService.findByUserId(new BigDecimal(userId)).ifPresent(user -> {
                 UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                         user,
@@ -40,7 +41,7 @@ public class HttpHeaderAuthenticationFilter extends OncePerRequestFilter {
             });
         }
 
-        if(filterChain == null) {
+        if(null == filterChain) {
             return;
         }
         filterChain.doFilter(request, response);
