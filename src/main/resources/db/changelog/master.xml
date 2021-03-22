@@ -13,4 +13,5 @@
     <property name="datetimeType" value="datetime" dbms="h2"/>
 
     <include file="0001_initialize.xml" relativeToChangelogFile="true"/>
+    <include file="0001_devdata.xml" relativeToChangelogFile="true" context="dev"/>
 </databaseChangeLog>
