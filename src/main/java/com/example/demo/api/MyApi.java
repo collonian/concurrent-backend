@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+
 @RestController
 @RequestMapping("/api/my")
 public class MyApi {
@@ -24,8 +27,8 @@ public class MyApi {
     @GetMapping(path="/investments")
     public InvestmentList getInvestments(
             @AuthenticationPrincipal User user,
-            @RequestParam(value = "offset", defaultValue = "0") int offset,
-            @RequestParam(value = "limit", defaultValue = "20") int limit
+            @RequestParam(value = "offset", defaultValue = "0") @Min(0) int offset,
+            @RequestParam(value = "limit", defaultValue = "20") @Min(1) @Max(100) int limit
     ) {
         return investmentService.queryByUser(user, new Page(offset, limit));
     }
