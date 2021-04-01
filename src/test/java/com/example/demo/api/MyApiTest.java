@@ -47,9 +47,9 @@ class MyApiTest {
                 .thenReturn(Optional.of(new User(BigDecimal.ONE)));
     }
     @Test
-    public void shouldSucceed_whenQueryProducts_givenXUserId() throws Exception {
+    public void shouldSucceed_whenFindMyInvestment_givenXUserId() throws Exception {
         // given
-        when(investmentService.queryByUser(any(), any()))
+        when(investmentService.findByUser(any(), any()))
                 .thenReturn(new InvestmentList(
                         1,
                         Collections.singletonList(Investment.create(
@@ -76,6 +76,6 @@ class MyApiTest {
                 .andExpect(jsonPath("investments[0].title").value("product title"))
                 .andExpect(jsonPath("investments[0].totalInvestingAmount").value(5678))
         ;
-        verify(investmentService).queryByUser(any(), any());
+        verify(investmentService).findByUser(any(), any());
     }
 }

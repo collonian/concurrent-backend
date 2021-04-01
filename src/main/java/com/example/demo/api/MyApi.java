@@ -25,11 +25,11 @@ public class MyApi {
     }
 
     @GetMapping(path="/investments")
-    public InvestmentList queryMyInvestments(
+    public InvestmentList findMyInvestment(
             @AuthenticationPrincipal User user,
             @RequestParam(value = "offset", defaultValue = "0") @Min(0) int offset,
             @RequestParam(value = "limit", defaultValue = "20") @Min(1) @Max(100) int limit
     ) {
-        return investmentService.queryByUser(user, new Page(offset, limit));
+        return investmentService.findByUser(user, new Page(offset, limit));
     }
 }

@@ -30,7 +30,7 @@ public class InvestmentService {
         this.productMapper = productMapper;
     }
 
-    public InvestmentList queryByUser(User user, Page page) {
+    public InvestmentList findByUser(User user, Page page) {
         int count = investmentMapper.countByUserId(user.getUserId());
         List<Investment> investments = count == 0 ?
                 Collections.emptyList() :

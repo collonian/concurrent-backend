@@ -22,7 +22,7 @@ public class ProductService {
         this.productMapper = productMapper;
     }
 
-    public ProductList queryInvestableProducts(Page page) {
+    public ProductList findInvestable(Page page) {
         LocalDateTime now = LocalDateTime.now();
         int count = productMapper.countInvestable(now);
         List<Product> products = count == 0 ?

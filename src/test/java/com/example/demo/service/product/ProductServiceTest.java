@@ -29,9 +29,9 @@ class ProductServiceTest {
     private ProductService productService;
 
     @Test
-    public void shouldNotReadProductList_whenQueryInvestable_givenEmptyProduct() {
+    public void shouldNotReadProductList_whenFindInvestable_givenEmptyProduct() {
         // when
-        ProductList result = productService.queryInvestableProducts(new Page(10, 20));
+        ProductList result = productService.findInvestable(new Page(10, 20));
 
         // then
         assertEquals(0, result.getCount());
@@ -40,7 +40,7 @@ class ProductServiceTest {
         verify(productMapper, times(0)).findInvestable(any(), any());
     }
     @Test
-    public void shouldPassSameTime_whenQueryInvestable() {
+    public void shouldPassSameTime_whenFindInvestable() {
         // given
         Product product = new Product();
         when(productMapper.countInvestable(any()))
@@ -49,7 +49,7 @@ class ProductServiceTest {
                 .thenReturn(Collections.singletonList(product));
 
         // when
-        ProductList result = productService.queryInvestableProducts(new Page(0, 10));
+        ProductList result = productService.findInvestable(new Page(0, 10));
 
         // then
         assertEquals(1, result.getCount());

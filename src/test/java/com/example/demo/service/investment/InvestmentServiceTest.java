@@ -37,12 +37,12 @@ class InvestmentServiceTest {
     private InvestmentService investmentService;
 
     @Test
-    public void shouldNotCallInvestment_whenQueryByUser_givenEmptyInvestment() {
+    public void shouldNotCallInvestment_whenFindByUser_givenEmptyInvestment() {
         // given
         when(investmentMapper.countByUserId(any())).thenReturn(0);
 
         // when
-        InvestmentList result = investmentService.queryByUser(new User(BigDecimal.ZERO), new Page(0, 10));
+        InvestmentList result = investmentService.findByUser(new User(BigDecimal.ZERO), new Page(0, 10));
 
         // then
         assertEquals(0, result.getCount());
@@ -52,7 +52,7 @@ class InvestmentServiceTest {
     }
 
     @Test
-    public void shouldPassUserId_whenQueryByUser() {
+    public void shouldPassUserId_whenFindByUser() {
         // given
         when(investmentMapper.countByUserId(any()))
                 .thenReturn(1);
@@ -60,7 +60,7 @@ class InvestmentServiceTest {
                 .thenReturn(Collections.singletonList(new Investment()));
 
         // when
-        InvestmentList result = investmentService.queryByUser(new User(new BigDecimal("13")), new Page(0, 10));
+        InvestmentList result = investmentService.findByUser(new User(new BigDecimal("13")), new Page(0, 10));
 
         // then
         assertEquals(1, result.getCount());

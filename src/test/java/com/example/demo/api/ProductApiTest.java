@@ -5,12 +5,9 @@ import com.example.demo.service.product.vo.Product;
 import com.example.demo.service.product.vo.ProductList;
 import com.example.demo.service.user.UserService;
 import com.example.demo.service.user.vo.User;
-import org.assertj.core.api.LocalDateAssert;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -26,7 +23,6 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -53,9 +49,9 @@ class ProductApiTest {
     }
 
     @Test
-    public void shouldSucceed_whenQueryProducts_givenXUserId() throws Exception {
+    public void shouldSucceed_whenFindInvestableProducts_givenXUserId() throws Exception {
         // given
-        when(productService.queryInvestableProducts(any()))
+        when(productService.findInvestable(any()))
                 .thenReturn(new ProductList(
                         1,
                         Collections.singletonList(
@@ -86,6 +82,6 @@ class ProductApiTest {
                 .andExpect(jsonPath("products[0].totalInvestingAmount").value(2345))
                 .andExpect(jsonPath("products[0].collectedInvestingAmount").value(345))
         ;
-        verify(productService).queryInvestableProducts(any());
+        verify(productService).findInvestable(any());
     }
 }

@@ -23,10 +23,10 @@ public class ProductApi {
     }
 
     @GetMapping
-    public ProductList queryInvestableProducts(
+    public ProductList findInvestable(
             @RequestParam(value = "offset", defaultValue = "0") @Min(0) int offset,
             @RequestParam(value = "limit", defaultValue = "20") @Min(1) @Max(100) int limit
     ) {
-        return productService.queryInvestableProducts(new Page(offset, limit));
+        return productService.findInvestable(new Page(offset, limit));
     }
 }
