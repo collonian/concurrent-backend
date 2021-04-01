@@ -83,6 +83,7 @@ class InvestmentServiceTest {
         verify(investmentMapper).isInvestmentAccepted(any());
         verify(investmentMapper).markInvestmentEvent(any());
     }
+
     @Test
     public void shouldMarkInvertEvent_whenTryInvestment_givenUnacceptableRequest() {
         // given
@@ -137,12 +138,11 @@ class InvestmentServiceTest {
         // then
         verify(productMapper).findByProductId(eq(BigDecimal.ONE));
     }
+
     @Test
     public void shouldThrowInvalidProduct_whenValidate_givenNotExistsProduct() {
         // when
-        InvalidInvestmentProblem problem = assertThrows(InvalidInvestmentProblem.class, () -> {
-            investmentService.validateInvestment(InvestmentParam.create(BigDecimal.ONE, BigDecimal.TEN, new BigDecimal("123")));
-        });
+        InvalidInvestmentProblem problem = assertThrows(InvalidInvestmentProblem.class, () -> investmentService.validateInvestment(InvestmentParam.create(BigDecimal.ONE, BigDecimal.TEN, new BigDecimal("123"))));
 
         // then
         assertEquals(InvestmentError.INVALID_PRODUCT, problem.getParameters().get("error_code"));
@@ -161,9 +161,7 @@ class InvestmentServiceTest {
                 );
 
         // when
-        InvalidInvestmentProblem problem = assertThrows(InvalidInvestmentProblem.class, () -> {
-            investmentService.validateInvestment(InvestmentParam.create(BigDecimal.ONE, BigDecimal.TEN, new BigDecimal("123")));
-        });
+        InvalidInvestmentProblem problem = assertThrows(InvalidInvestmentProblem.class, () -> investmentService.validateInvestment(InvestmentParam.create(BigDecimal.ONE, BigDecimal.TEN, new BigDecimal("123"))));
 
         // then
         assertEquals(InvestmentError.NOT_STARTED, problem.getParameters().get("error_code"));
@@ -182,9 +180,7 @@ class InvestmentServiceTest {
                 );
 
         // when
-        InvalidInvestmentProblem problem = assertThrows(InvalidInvestmentProblem.class, () -> {
-            investmentService.validateInvestment(InvestmentParam.create(BigDecimal.ONE, BigDecimal.TEN, new BigDecimal("123")));
-        });
+        InvalidInvestmentProblem problem = assertThrows(InvalidInvestmentProblem.class, () -> investmentService.validateInvestment(InvestmentParam.create(BigDecimal.ONE, BigDecimal.TEN, new BigDecimal("123"))));
 
         // then
         assertEquals(InvestmentError.FINISHED, problem.getParameters().get("error_code"));
@@ -203,9 +199,7 @@ class InvestmentServiceTest {
                 );
 
         // when
-        InvalidInvestmentProblem problem = assertThrows(InvalidInvestmentProblem.class, () -> {
-            investmentService.validateInvestment(InvestmentParam.create(BigDecimal.ONE, BigDecimal.TEN, new BigDecimal("123")));
-        });
+        InvalidInvestmentProblem problem = assertThrows(InvalidInvestmentProblem.class, () -> investmentService.validateInvestment(InvestmentParam.create(BigDecimal.ONE, BigDecimal.TEN, new BigDecimal("123"))));
 
         // then
         assertEquals(InvestmentError.SOLDOUT, problem.getParameters().get("error_code"));

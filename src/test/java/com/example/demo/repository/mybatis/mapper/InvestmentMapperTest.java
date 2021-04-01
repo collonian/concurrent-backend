@@ -3,7 +3,6 @@ package com.example.demo.repository.mybatis.mapper;
 import com.example.demo.service.Page;
 import com.example.demo.service.investment.vo.Investment;
 import com.example.demo.service.investment.vo.InvestmentEvent;
-import org.apache.ibatis.annotations.Param;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mybatis.spring.boot.test.autoconfigure.MybatisTest;

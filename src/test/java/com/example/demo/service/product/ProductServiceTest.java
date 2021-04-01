@@ -15,7 +15,8 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.time.LocalDateTime;
 import java.util.Collections;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -39,6 +40,7 @@ class ProductServiceTest {
         verify(productMapper).countInvestable(any());
         verify(productMapper, times(0)).findInvestable(any(), any());
     }
+
     @Test
     public void shouldPassSameTime_whenFindInvestable() {
         // given

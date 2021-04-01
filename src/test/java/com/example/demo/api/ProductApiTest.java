@@ -3,7 +3,9 @@ package com.example.demo.api;
 import com.example.demo.service.product.ProductService;
 import com.example.demo.service.product.vo.Product;
 import com.example.demo.service.product.vo.ProductList;
+import com.example.demo.service.user.DemoUserDetailsService;
 import com.example.demo.service.user.UserService;
+import com.example.demo.service.user.vo.DemoUserDetails;
 import com.example.demo.service.user.vo.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,11 +14,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -40,12 +42,12 @@ class ProductApiTest {
     @MockBean
     private ProductService productService;
     @MockBean
-    private UserService userService;
+    private DemoUserDetailsService demoUserDetailsService;
 
     @BeforeEach
     public void beforeAll() {
-        when(userService.findByUserId(BigDecimal.ONE))
-                .thenReturn(Optional.of(new User(BigDecimal.ONE)));
+        when(demoUserDetailsService.loadUserDetails(any()))
+                .thenReturn(new DemoUserDetails(new User(BigDecimal.ONE)));
     }
 
     @Test
@@ -69,9 +71,9 @@ class ProductApiTest {
         // when
         final ResultActions result =
                 mvc.perform(
-                    get("/api/products")
-                            .header("X-USER-ID", "1")
-                            .contentType(MediaType.APPLICATION_JSON)
+                        get("/api/products")
+                                .header("X-USER-ID", "1")
+                                .contentType(MediaType.APPLICATION_JSON)
                 );
 
         // then

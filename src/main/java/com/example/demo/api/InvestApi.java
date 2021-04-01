@@ -5,7 +5,7 @@ import com.example.demo.service.investment.InvestmentService;
 import com.example.demo.service.investment.InvestmentError;
 import com.example.demo.service.investment.vo.Investment;
 import com.example.demo.service.investment.vo.InvestmentParam;
-import com.example.demo.service.user.vo.User;
+import com.example.demo.service.user.vo.DemoUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -29,8 +29,8 @@ public class InvestApi {
 
     @PostMapping
     public ResponseEntity<Investment> invest(@RequestBody InvestmentParam investmentParam,
-                                                  @AuthenticationPrincipal User user)  {
-        if(!user.getUserId().equals(investmentParam.getUserId())) {
+                                             @AuthenticationPrincipal DemoUserDetails userDetails)  {
+        if(!userDetails.getUser().getUserId().equals(investmentParam.getUserId())) {
             throw new InvalidInvestmentProblem(InvestmentError.UNMATCHED_USER);
         }
         investmentService.validateInvestment(investmentParam);

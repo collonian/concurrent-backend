@@ -5,24 +5,22 @@ import com.example.demo.service.investment.InvestmentService;
 import com.example.demo.service.investment.vo.Investment;
 import com.example.demo.service.investment.vo.InvestmentParam;
 import com.example.demo.service.product.ProductService;
-import com.example.demo.service.user.UserService;
+import com.example.demo.service.user.DemoUserDetailsService;
+import com.example.demo.service.user.vo.DemoUserDetails;
 import com.example.demo.service.user.vo.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 import java.math.BigDecimal;
-import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -30,26 +28,24 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(InvestApi.class)
-@ExtendWith(SpringExtension.class)
 @ActiveProfiles("test")
 @Import(JacksonConfig.class)
 class InvestApiTest {
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
     @Autowired
     private MockMvc mvc;
-
     @MockBean
     private InvestmentService investmentService;
     @MockBean
     private ProductService productService;
     @MockBean
-    private UserService userService;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private DemoUserDetailsService demoUserDetailsService;
 
     @BeforeEach
     public void beforeAll() {
-        when(userService.findByUserId(BigDecimal.ONE))
-                .thenReturn(Optional.of(new User(BigDecimal.ONE)));
+        when(demoUserDetailsService.loadUserDetails(any()))
+                .thenReturn(new DemoUserDetails(new User(BigDecimal.ONE)));
     }
 
     @Test
@@ -103,9 +99,9 @@ class InvestApiTest {
                 .thenReturn(true);
         when(investmentService.markInvestment(any()))
                 .thenReturn(Investment.create(
-                                BigDecimal.TEN, BigDecimal.ONE, new BigDecimal("123"),
-                                "some product", new BigDecimal("5432")
-                        ));
+                        BigDecimal.TEN, BigDecimal.ONE, new BigDecimal("123"),
+                        "some product", new BigDecimal("5432")
+                ));
 
         // when
         String content = objectMapper.writeValueAsString(
@@ -127,6 +123,6 @@ class InvestApiTest {
                 .andExpect(jsonPath("productId").value(10))
                 .andExpect(jsonPath("investingAmount").value(123))
                 .andExpect(jsonPath("totalInvestingAmount").value(5432))
-                ;
+        ;
     }
 }
