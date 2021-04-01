@@ -4,26 +4,21 @@ import com.example.demo.service.product.ProductService;
 import com.example.demo.service.product.vo.Product;
 import com.example.demo.service.product.vo.ProductList;
 import com.example.demo.service.user.DemoUserDetailsService;
-import com.example.demo.service.user.UserService;
 import com.example.demo.service.user.vo.DemoUserDetails;
 import com.example.demo.service.user.vo.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Collections;
-import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -33,7 +28,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ProductApi.class)
-@ExtendWith(SpringExtension.class)
 @ActiveProfiles("test")
 class ProductApiTest {
     @Autowired

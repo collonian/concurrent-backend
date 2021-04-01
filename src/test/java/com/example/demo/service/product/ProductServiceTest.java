@@ -1,6 +1,5 @@
 package com.example.demo.service.product;
 
-import com.example.demo.repository.mybatis.mapper.ProductMapper;
 import com.example.demo.service.Page;
 import com.example.demo.service.product.vo.Product;
 import com.example.demo.service.product.vo.ProductList;
@@ -25,7 +24,7 @@ import static org.mockito.Mockito.*;
 @ActiveProfiles("test")
 class ProductServiceTest {
     @Mock
-    private ProductMapper productMapper;
+    private ProductRepository productRepository;
     @InjectMocks
     private ProductService productService;
 
@@ -37,17 +36,17 @@ class ProductServiceTest {
         // then
         assertEquals(0, result.getCount());
         assertTrue(result.getProducts().isEmpty());
-        verify(productMapper).countInvestable(any());
-        verify(productMapper, times(0)).findInvestable(any(), any());
+        verify(productRepository).countInvestable(any());
+        verify(productRepository, times(0)).findInvestable(any(), any());
     }
 
     @Test
     public void shouldPassSameTime_whenFindInvestable() {
         // given
         Product product = new Product();
-        when(productMapper.countInvestable(any()))
+        when(productRepository.countInvestable(any()))
                 .thenReturn(1);
-        when(productMapper.findInvestable(any(), any()))
+        when(productRepository.findInvestable(any(), any()))
                 .thenReturn(Collections.singletonList(product));
 
         // when
@@ -58,7 +57,7 @@ class ProductServiceTest {
         assertEquals(product, result.getProducts().get(0));
 
         ArgumentCaptor<LocalDateTime> nowCaptor = ArgumentCaptor.forClass(LocalDateTime.class);
-        verify(productMapper).countInvestable(nowCaptor.capture());
-        verify(productMapper).findInvestable(eq(nowCaptor.getValue()), any());
+        verify(productRepository).countInvestable(nowCaptor.capture());
+        verify(productRepository).findInvestable(eq(nowCaptor.getValue()), any());
     }
 }

@@ -69,35 +69,9 @@ class InvestApiTest {
     }
 
     @Test
-    public void shouldThrowExceedLimit_whenInvest_givenExeedLimitInvest() throws Exception {
-        // given
-        when(investmentService.tryInvestment(any()))
-                .thenReturn(false);
-
-        // when
-        String content = objectMapper.writeValueAsString(
-                InvestmentParam.create(BigDecimal.TEN, BigDecimal.ONE, new BigDecimal("123"))
-        );
-        ResultActions result = mvc
-                .perform(
-                        post("/api/investments")
-                                .header("X-USER-ID", 1)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(content)
-                );
-
-        // then
-        result
-                .andExpect(status().isUnprocessableEntity())
-                .andExpect(jsonPath("error_code").value("EXCEED_LIMIT"));
-    }
-
-    @Test
     public void shouldSucceed_whenInvest_givenNormalInvestment() throws Exception {
         // given
-        when(investmentService.tryInvestment(any()))
-                .thenReturn(true);
-        when(investmentService.markInvestment(any()))
+        when(investmentService.invest(any()))
                 .thenReturn(Investment.create(
                         BigDecimal.TEN, BigDecimal.ONE, new BigDecimal("123"),
                         "some product", new BigDecimal("5432")

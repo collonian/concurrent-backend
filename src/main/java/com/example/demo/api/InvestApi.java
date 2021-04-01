@@ -33,13 +33,7 @@ public class InvestApi {
         if(!userDetails.getUser().getUserId().equals(investmentParam.getUserId())) {
             throw new InvalidInvestmentProblem(InvestmentError.UNMATCHED_USER);
         }
-        investmentService.validateInvestment(investmentParam);
-
-        boolean accepted = investmentService.tryInvestment(investmentParam);
-        if(!accepted) {
-            throw new InvalidInvestmentProblem(InvestmentError.EXCEED_LIMIT);
-        }
-        Investment result = investmentService.markInvestment(investmentParam);
+        Investment result = investmentService.invest(investmentParam);
 
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
