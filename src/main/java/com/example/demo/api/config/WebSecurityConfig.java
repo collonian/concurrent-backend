@@ -1,26 +1,27 @@
 package com.example.demo.api.config;
 
+import com.example.demo.api.config.exception.FilterChainExceptionHandleFilter;
 import com.example.demo.service.user.DemoUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 import org.springframework.security.web.authentication.preauth.RequestHeaderAuthenticationFilter;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.zalando.problem.spring.web.advice.security.SecurityProblemSupport;
-
-import java.util.Collections;
 
 @Configuration
 @EnableWebSecurity
@@ -30,24 +31,19 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private SecurityProblemSupport problemSupport;
     @Autowired
     private DemoUserDetailsService userDetailsService;
+    @Autowired
+    @Qualifier("handlerExceptionResolver")
+    private HandlerExceptionResolver resolver;
 
-    public RequestHeaderAuthenticationFilter requestHeaderAuthenticationFilter() {
-        RequestHeaderAuthenticationFilter filter = new RequestHeaderAuthenticationFilter();
-        filter.setAuthenticationManager(authenticationManager());
-        filter.setPrincipalRequestHeader("X-USER-ID");
-        return filter;
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager() {
-        return new ProviderManager(Collections.singletonList(authenticationProvider()));
+    @Override
+    public void configure(AuthenticationManagerBuilder auth) {
+        auth.authenticationProvider(authenticationProvider());
     }
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
         PreAuthenticatedAuthenticationProvider authenticationProvider = new PreAuthenticatedAuthenticationProvider();
         authenticationProvider.setPreAuthenticatedUserDetailsService(userDetailsService);
-        authenticationProvider.setThrowExceptionWhenTokenRejected(true);
         return authenticationProvider;
     }
 
@@ -78,8 +74,23 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.OPTIONS).permitAll()
                 .anyRequest().authenticated()
                 .and()
+                .addFilterBefore(filterChainExceptionHandleFilter(), LogoutFilter.class)
+                .addFilterAfter(requestHeaderAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
         ;
+    }
 
-        http.addFilterBefore(requestHeaderAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+    @Bean
+    public FilterChainExceptionHandleFilter filterChainExceptionHandleFilter() {
+        FilterChainExceptionHandleFilter filter = new FilterChainExceptionHandleFilter();
+        filter.setResolver(resolver);
+        return filter;
+    }
+    @Bean
+    public RequestHeaderAuthenticationFilter requestHeaderAuthenticationFilter() throws Exception {
+        RequestHeaderAuthenticationFilter filter = new RequestHeaderAuthenticationFilter();
+        filter.setAuthenticationManager(authenticationManager());
+        filter.setExceptionIfHeaderMissing(true);
+        filter.setPrincipalRequestHeader("X-USER-ID");
+        return filter;
     }
 }
