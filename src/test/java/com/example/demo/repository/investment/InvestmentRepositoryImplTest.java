@@ -33,8 +33,6 @@ import static org.mockito.Mockito.*;
 class InvestmentRepositoryImplTest {
     @Mock
     private InvestmentMapper investmentMapper;
-    @Mock
-    private ProductMapper productMapper;
     @InjectMocks
     InvestmentRepositoryImpl investmentRepository;
 
@@ -81,92 +79,6 @@ class InvestmentRepositoryImplTest {
         assertEquals(new BigDecimal("255"), captor.getValue().getInvestingAmount());
 
         verify(investmentMapper).findById(eq(captor.getValue().getId()));
-    }
-
-
-    @Test
-    public void shouldPass_whenValidate_givenNormalProduct() {
-        // given
-        when(productMapper.findByProductId(BigDecimal.ONE))
-                .thenReturn(Product.builder()
-                        .startedAt(LocalDateTime.now().minusDays(10))
-                        .finishedAt(LocalDateTime.now().plusDays(5))
-                        .totalInvestingAmount(new BigDecimal("10000"))
-                        .collectedInvestingAmount(new BigDecimal("100"))
-                        .build()
-                );
-
-        // when
-        investmentRepository.validateInvestment(InvestmentParam.create(BigDecimal.ONE, BigDecimal.TEN, new BigDecimal("123")));
-
-        // then
-        verify(productMapper).findByProductId(eq(BigDecimal.ONE));
-    }
-
-    @Test
-    public void shouldThrowInvalidProduct_whenValidate_givenNotExistsProduct() {
-        // when
-        InvalidInvestmentProblem problem = assertThrows(InvalidInvestmentProblem.class, () -> investmentRepository.validateInvestment(InvestmentParam.create(BigDecimal.ONE, BigDecimal.TEN, new BigDecimal("123"))));
-
-        // then
-        assertEquals(InvestmentError.INVALID_PRODUCT, problem.getParameters().get("error_code"));
-    }
-
-    @Test
-    public void shouldThrowNotStarted_whenValidate_givenNotStartedProduct() {
-        // given
-        when(productMapper.findByProductId(BigDecimal.ONE))
-                .thenReturn(Product.builder()
-                        .startedAt(LocalDateTime.now().plusDays(5))
-                        .finishedAt(LocalDateTime.now().plusDays(10))
-                        .totalInvestingAmount(new BigDecimal("10000"))
-                        .collectedInvestingAmount(BigDecimal.ZERO)
-                        .build()
-                );
-
-        // when
-        InvalidInvestmentProblem problem = assertThrows(InvalidInvestmentProblem.class, () -> investmentRepository.validateInvestment(InvestmentParam.create(BigDecimal.ONE, BigDecimal.TEN, new BigDecimal("123"))));
-
-        // then
-        assertEquals(InvestmentError.NOT_STARTED, problem.getParameters().get("error_code"));
-    }
-
-    @Test
-    public void shouldThrowFinished_whenValidate_givenClosedProduct() {
-        // given
-        when(productMapper.findByProductId(BigDecimal.ONE))
-                .thenReturn(Product.builder()
-                        .startedAt(LocalDateTime.now().minusDays(10))
-                        .finishedAt(LocalDateTime.now().minusDays(5))
-                        .totalInvestingAmount(new BigDecimal("10000"))
-                        .collectedInvestingAmount(BigDecimal.ZERO)
-                        .build()
-                );
-
-        // when
-        InvalidInvestmentProblem problem = assertThrows(InvalidInvestmentProblem.class, () -> investmentRepository.validateInvestment(InvestmentParam.create(BigDecimal.ONE, BigDecimal.TEN, new BigDecimal("123"))));
-
-        // then
-        assertEquals(InvestmentError.FINISHED, problem.getParameters().get("error_code"));
-    }
-
-    @Test
-    public void shouldThrowSoldout_whenValidate_givenSoldoutProduct() {
-        // given
-        when(productMapper.findByProductId(BigDecimal.ONE))
-                .thenReturn(Product.builder()
-                        .startedAt(LocalDateTime.now().minusDays(10))
-                        .finishedAt(LocalDateTime.now().plusDays(5))
-                        .totalInvestingAmount(new BigDecimal("10000"))
-                        .collectedInvestingAmount(new BigDecimal("10000"))
-                        .build()
-                );
-
-        // when
-        InvalidInvestmentProblem problem = assertThrows(InvalidInvestmentProblem.class, () -> investmentRepository.validateInvestment(InvestmentParam.create(BigDecimal.ONE, BigDecimal.TEN, new BigDecimal("123"))));
-
-        // then
-        assertEquals(InvestmentError.SOLDOUT, problem.getParameters().get("error_code"));
     }
 
     @Test

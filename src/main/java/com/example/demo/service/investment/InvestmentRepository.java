@@ -10,7 +10,6 @@ import java.util.List;
 public interface InvestmentRepository {
     boolean isAcceptable(InvestmentParam investment);
     Investment save(Investment investmentParam);
-    void validateInvestment(InvestmentParam investmentParam) throws InvalidInvestmentProblem;
     int countByUser(User user);
     List<Investment> findByUser(User user, Page page);
 }

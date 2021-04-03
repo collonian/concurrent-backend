@@ -4,6 +4,8 @@ import com.example.demo.service.Page;
 import com.example.demo.service.investment.vo.Investment;
 import com.example.demo.service.investment.vo.InvestmentList;
 import com.example.demo.service.investment.vo.InvestmentParam;
+import com.example.demo.service.product.ProductRepository;
+import com.example.demo.service.product.vo.Product;
 import com.example.demo.service.user.vo.User;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,6 +16,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -26,6 +29,8 @@ import static org.mockito.Mockito.*;
 class InvestmentServiceTest {
     @Mock
     private InvestmentRepository investmentRepository;
+    @Mock
+    private ProductRepository productRepository;
     @InjectMocks
     private InvestmentService investmentService;
     private User user = new User(BigDecimal.ONE);
@@ -65,6 +70,14 @@ class InvestmentServiceTest {
     @Test
     public void shouldSaveInvestment_whenInvest_givenAcceptableInvestment() {
         // given
+        when(productRepository.findByProductId(any()))
+                .thenReturn(Product.builder()
+                        .startedAt(LocalDateTime.MIN)
+                        .finishedAt(LocalDateTime.MAX)
+                        .totalInvestingAmount(new BigDecimal("1000"))
+                        .collectedInvestingAmount(new BigDecimal("500"))
+                        .build()
+                );
         when(investmentRepository.isAcceptable(any()))
                 .thenReturn(true);
 
@@ -73,7 +86,6 @@ class InvestmentServiceTest {
         investmentService.invest(param);
 
         // then
-        verify(investmentRepository).validateInvestment(eq(param));
         verify(investmentRepository).isAcceptable(eq(param));
         ArgumentCaptor<Investment> captor = ArgumentCaptor.forClass(Investment.class);
         verify(investmentRepository).save(captor.capture());
@@ -86,6 +98,14 @@ class InvestmentServiceTest {
     @Test
     public void shouldThrowException_whenInvest_givenUnacceptableInvestment() {
         // given
+        when(productRepository.findByProductId(any()))
+                .thenReturn(Product.builder()
+                        .startedAt(LocalDateTime.MIN)
+                        .finishedAt(LocalDateTime.MAX)
+                        .totalInvestingAmount(new BigDecimal("1000"))
+                        .collectedInvestingAmount(new BigDecimal("500"))
+                        .build()
+                );
         when(investmentRepository.isAcceptable(any()))
                 .thenReturn(false);
 
@@ -94,11 +114,88 @@ class InvestmentServiceTest {
         InvalidInvestmentProblem problem = assertThrows(InvalidInvestmentProblem.class, () -> investmentService.invest(param));
 
         // then
-        verify(investmentRepository).validateInvestment(eq(param));
         verify(investmentRepository).isAcceptable(eq(param));
         verify(investmentRepository, times(0)).save(any());
         assertEquals(InvestmentError.EXCEED_LIMIT, problem.getParameters().get("error_code"));
 
     }
 
+    @Test
+    public void shouldPass_whenValidate_givenNormalProduct() {
+        when(productRepository.findByProductId(any()))
+                .thenReturn(Product.builder()
+                        .startedAt(LocalDateTime.MIN)
+                        .finishedAt(LocalDateTime.MAX)
+                        .totalInvestingAmount(new BigDecimal("1000"))
+                        .collectedInvestingAmount(new BigDecimal("500"))
+                        .build()
+                );
+
+        InvestmentParam param = InvestmentParam.create(BigDecimal.ONE, BigDecimal.TEN, new BigDecimal("255"));
+        investmentService.validate(param);
+
+    }
+    @Test
+    public void shouldFaildWithInvalidProduct_whenValidate_givenInvalidProduct() {
+        when(productRepository.findByProductId(any()))
+                .thenReturn(null);
+
+        InvestmentParam param = InvestmentParam.create(BigDecimal.ONE, BigDecimal.TEN, new BigDecimal("255"));
+        InvalidInvestmentProblem problem = assertThrows(InvalidInvestmentProblem.class, () -> investmentService.validate(param));
+
+        assertEquals(InvestmentError.INVALID_PRODUCT, problem.getParameters().get("error_code"));
+        verify(productRepository).findByProductId(eq(BigDecimal.ONE));
+    }
+    @Test
+    public void shouldFailedWithNotStarted_whenValidate_givenNotStartedProduct() {
+        when(productRepository.findByProductId(any()))
+                .thenReturn(Product.builder()
+                        .startedAt(LocalDateTime.now().plusDays(2))
+                        .finishedAt(LocalDateTime.MAX)
+                        .totalInvestingAmount(new BigDecimal("1000"))
+                        .collectedInvestingAmount(new BigDecimal("500"))
+                        .build()
+                );
+
+        InvestmentParam param = InvestmentParam.create(BigDecimal.ONE, BigDecimal.TEN, new BigDecimal("255"));
+        InvalidInvestmentProblem problem = assertThrows(InvalidInvestmentProblem.class, () -> investmentService.validate(param));
+
+        assertEquals(InvestmentError.NOT_STARTED, problem.getParameters().get("error_code"));
+        verify(productRepository).findByProductId(eq(BigDecimal.ONE));
+    }
+    @Test
+    public void shouldFailedWithFinished_whenValidate_givenFinishedProduct() {
+        when(productRepository.findByProductId(any()))
+                .thenReturn(Product.builder()
+                        .startedAt(LocalDateTime.MIN)
+                        .finishedAt(LocalDateTime.now().minusDays(2))
+                        .totalInvestingAmount(new BigDecimal("1000"))
+                        .collectedInvestingAmount(new BigDecimal("500"))
+                        .build()
+                );
+
+        InvestmentParam param = InvestmentParam.create(BigDecimal.ONE, BigDecimal.TEN, new BigDecimal("255"));
+        InvalidInvestmentProblem problem = assertThrows(InvalidInvestmentProblem.class, () -> investmentService.validate(param));
+
+        assertEquals(InvestmentError.FINISHED, problem.getParameters().get("error_code"));
+        verify(productRepository).findByProductId(eq(BigDecimal.ONE));
+    }
+
+    @Test
+    public void shouldFailedWithSoldout_whenValidate_givenSoldoutProduct() {
+        when(productRepository.findByProductId(any()))
+                .thenReturn(Product.builder()
+                        .startedAt(LocalDateTime.MIN)
+                        .finishedAt(LocalDateTime.MAX)
+                        .totalInvestingAmount(new BigDecimal("1000"))
+                        .collectedInvestingAmount(new BigDecimal("1000"))
+                        .build()
+                );
+
+        InvestmentParam param = InvestmentParam.create(BigDecimal.ONE, BigDecimal.TEN, new BigDecimal("255"));
+        InvalidInvestmentProblem problem = assertThrows(InvalidInvestmentProblem.class, () -> investmentService.validate(param));
+
+        assertEquals(InvestmentError.SOLDOUT, problem.getParameters().get("error_code"));
+        verify(productRepository).findByProductId(eq(BigDecimal.ONE));
+    }
 }
