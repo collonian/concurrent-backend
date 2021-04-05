@@ -2,6 +2,7 @@ package com.example.demo.service.investment;
 
 public enum InvestmentError {
     INVALID_PRODUCT("error.investment.invalid_product"),
+    INVALID_INVESTMENT_AMOUNT("error.investment.invalid_investment_amount"),
     UNMATCHED_USER("error.investment.unmatched_user"),
     NOT_STARTED("error.investment.not_started"),
     FINISHED("error.investment.finished"),

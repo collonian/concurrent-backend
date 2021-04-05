@@ -49,6 +49,26 @@ class InvestApiTest {
     }
 
     @Test
+    public void shouldThrowInvalidAmountException_whenInvest_givenNegativeAmount() throws Exception {
+        // when
+        String content = objectMapper.writeValueAsString(
+                InvestmentParam.create(BigDecimal.TEN, BigDecimal.ONE, new BigDecimal("-123"))
+        );
+        ResultActions result = mvc
+                .perform(
+                        post("/api/investments")
+                                .header("X-USER-ID", 1)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(content)
+                );
+
+        // then
+        result
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("error_code").value("INVALID_INVESTMENT_AMOUNT"));
+    }
+
+    @Test
     public void shouldThrowUnmatchedUser_whenInvest_givenUnmatchedUser() throws Exception {
         // when
         String content = objectMapper.writeValueAsString(
