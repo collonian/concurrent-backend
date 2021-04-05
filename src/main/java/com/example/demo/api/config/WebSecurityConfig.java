@@ -5,7 +5,6 @@ import com.example.demo.service.user.DemoUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
@@ -40,7 +39,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         auth.authenticationProvider(authenticationProvider());
     }
 
-    @Bean
     public AuthenticationProvider authenticationProvider() {
         PreAuthenticatedAuthenticationProvider authenticationProvider = new PreAuthenticatedAuthenticationProvider();
         authenticationProvider.setPreAuthenticatedUserDetailsService(userDetailsService);
@@ -79,13 +77,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         ;
     }
 
-    @Bean
     public FilterChainExceptionHandleFilter filterChainExceptionHandleFilter() {
         FilterChainExceptionHandleFilter filter = new FilterChainExceptionHandleFilter();
         filter.setResolver(resolver);
         return filter;
     }
-    @Bean
     public RequestHeaderAuthenticationFilter requestHeaderAuthenticationFilter() throws Exception {
         RequestHeaderAuthenticationFilter filter = new RequestHeaderAuthenticationFilter();
         filter.setAuthenticationManager(authenticationManager());
