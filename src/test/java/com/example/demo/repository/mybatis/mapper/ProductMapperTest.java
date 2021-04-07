@@ -13,7 +13,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(SpringExtension.class)
 @ActiveProfiles("test")
@@ -36,13 +37,14 @@ class ProductMapperTest {
         assertTrue(LocalDateTime.now().isBefore(one.getFinishedAt()));
 
         Product two = products.get(1);
-        assertEquals(new BigDecimal("2"),two.getProductId());
+        assertEquals(new BigDecimal("2"), two.getProductId());
         assertEquals("second", two.getTitle());
         assertEquals(new BigDecimal("2"), two.getCollectedCount());
         assertEquals(new BigDecimal("300"), two.getCollectedInvestingAmount());
         assertTrue(LocalDateTime.now().isAfter(two.getStartedAt()));
         assertTrue(LocalDateTime.now().isBefore(two.getFinishedAt()));
     }
+
     @Test
     public void countInvestable() {
         int count = productMapper.countInvestable(LocalDateTime.now());

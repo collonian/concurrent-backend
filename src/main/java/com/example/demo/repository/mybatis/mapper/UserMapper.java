@@ -1,5 +1,6 @@
 package com.example.demo.repository.mybatis.mapper;
 
+import com.example.demo.service.user.UserRepository;
 import com.example.demo.service.user.vo.User;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -9,6 +10,6 @@ import java.math.BigDecimal;
 
 @Mapper
 @Repository
-public interface UserMapper {
+public interface UserMapper extends UserRepository {
     User findByUserId(@Param("userId") BigDecimal userId);
 }

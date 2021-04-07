@@ -1,12 +1,10 @@
 package com.example.demo.service.investment;
 
-import com.example.demo.repository.mybatis.mapper.InvestmentMapper;
-import com.example.demo.repository.mybatis.mapper.ProductMapper;
 import com.example.demo.service.Page;
 import com.example.demo.service.investment.vo.Investment;
-import com.example.demo.service.investment.vo.InvestmentEvent;
 import com.example.demo.service.investment.vo.InvestmentList;
 import com.example.demo.service.investment.vo.InvestmentParam;
+import com.example.demo.service.product.ProductRepository;
 import com.example.demo.service.product.vo.Product;
 import com.example.demo.service.user.vo.User;
 import org.junit.jupiter.api.Test;
@@ -30,184 +28,174 @@ import static org.mockito.Mockito.*;
 @ActiveProfiles("test")
 class InvestmentServiceTest {
     @Mock
-    private InvestmentMapper investmentMapper;
+    private InvestmentRepository investmentRepository;
     @Mock
-    private ProductMapper productMapper;
+    private ProductRepository productRepository;
     @InjectMocks
     private InvestmentService investmentService;
+    private User user = new User(BigDecimal.ONE);
 
     @Test
-    public void shouldNotCallInvestment_whenQueryByUser_givenEmptyInvestment() {
+    public void shouldNotFindInvestment_whenFindByUser_givenEmptyInvestment() {
         // given
-        when(investmentMapper.countByUserId(any())).thenReturn(0);
+        when(investmentRepository.countByUser(any())).thenReturn(0);
 
         // when
-        InvestmentList result = investmentService.queryByUser(new User(BigDecimal.ZERO), new Page(0, 10));
+        InvestmentList result = investmentService.findByUser(user, new Page(0, 10));
 
         // then
         assertEquals(0, result.getCount());
         assertTrue(result.getInvestments().isEmpty());
-        verify(investmentMapper).countByUserId(eq(BigDecimal.ZERO));
-        verify(investmentMapper, times(0)).findByUserId(any(), any());
+        verify(investmentRepository).countByUser(eq(user));
+        verify(investmentRepository, times(0)).findByUser(any(), any());
     }
 
     @Test
-    public void shouldPassUserId_whenQueryByUser() {
+    public void shouldFindInvestment_whenFindByUser_thereIsInvestments() {
         // given
-        when(investmentMapper.countByUserId(any()))
-                .thenReturn(1);
-        when(investmentMapper.findByUserId(any(), any()))
+        when(investmentRepository.countByUser(any())).thenReturn(1);
+        when(investmentRepository.findByUser(any(), any()))
                 .thenReturn(Collections.singletonList(new Investment()));
 
         // when
-        InvestmentList result = investmentService.queryByUser(new User(new BigDecimal("13")), new Page(0, 10));
+        InvestmentList result = investmentService.findByUser(user, new Page(0, 10));
 
         // then
         assertEquals(1, result.getCount());
         assertEquals(1, result.getInvestments().size());
-        verify(investmentMapper).countByUserId(eq(new BigDecimal("13")));
-        verify(investmentMapper).findByUserId(eq(new BigDecimal("13")), any());
+        verify(investmentRepository).countByUser(eq(user));
+        verify(investmentRepository).findByUser(eq(user), any());
     }
 
     @Test
-    public void shouldNotMarkInvertEvent_whenTryInvestment_givenAcceptableRequest() {
+    public void shouldSaveInvestment_whenInvest_givenAcceptableInvestment() {
         // given
-        when(investmentMapper.isInvestmentAccepted(any()))
+        when(productRepository.findByProductId(any()))
+                .thenReturn(Product.builder()
+                        .startedAt(LocalDateTime.MIN)
+                        .finishedAt(LocalDateTime.MAX)
+                        .totalInvestingAmount(new BigDecimal("1000"))
+                        .collectedInvestingAmount(new BigDecimal("500"))
+                        .build()
+                );
+        when(investmentRepository.isAcceptable(any()))
                 .thenReturn(true);
 
         // when
         InvestmentParam param = InvestmentParam.create(BigDecimal.ONE, BigDecimal.TEN, new BigDecimal("255"));
-        investmentService.tryInvestment(param);
+        investmentService.invest(param);
 
         // then
-        verify(investmentMapper).isInvestmentAccepted(any());
-        verify(investmentMapper).markInvestmentEvent(any());
+        verify(investmentRepository).isAcceptable(eq(param));
+        ArgumentCaptor<Investment> captor = ArgumentCaptor.forClass(Investment.class);
+        verify(investmentRepository).save(captor.capture());
+
+        assertEquals(BigDecimal.ONE, captor.getValue().getProductId());
+        assertEquals(BigDecimal.TEN, captor.getValue().getUserId());
+        assertEquals(new BigDecimal("255"), captor.getValue().getInvestingAmount());
     }
+
     @Test
-    public void shouldMarkInvertEvent_whenTryInvestment_givenUnacceptableRequest() {
+    public void shouldThrowException_whenInvest_givenUnacceptableInvestment() {
         // given
-        when(investmentMapper.isInvestmentAccepted(any()))
+        when(productRepository.findByProductId(any()))
+                .thenReturn(Product.builder()
+                        .startedAt(LocalDateTime.MIN)
+                        .finishedAt(LocalDateTime.MAX)
+                        .totalInvestingAmount(new BigDecimal("1000"))
+                        .collectedInvestingAmount(new BigDecimal("500"))
+                        .build()
+                );
+        when(investmentRepository.isAcceptable(any()))
                 .thenReturn(false);
 
         // when
         InvestmentParam param = InvestmentParam.create(BigDecimal.ONE, BigDecimal.TEN, new BigDecimal("255"));
-        investmentService.tryInvestment(param);
+        InvalidInvestmentProblem problem = assertThrows(InvalidInvestmentProblem.class, () -> investmentService.invest(param));
 
         // then
-        verify(investmentMapper).isInvestmentAccepted(any());
-        ArgumentCaptor<InvestmentEvent> captor = ArgumentCaptor.forClass(InvestmentEvent.class);
-        verify(investmentMapper, times(2)).markInvestmentEvent(captor.capture());
+        verify(investmentRepository).isAcceptable(eq(param));
+        verify(investmentRepository, times(0)).save(any());
+        assertEquals(InvestmentError.EXCEED_LIMIT, problem.getParameters().get("error_code"));
 
-        assertEquals(new BigDecimal("255"), captor.getAllValues().get(0).getInvestingAmount());
-        assertEquals(new BigDecimal("-255"), captor.getAllValues().get(1).getInvestingAmount());
     }
-
-    @Test
-    public void shouldMarkAndFind_whenMarkInvestment() {
-        // when
-        InvestmentParam param = InvestmentParam.create(BigDecimal.ONE, BigDecimal.TEN, new BigDecimal("255"));
-        investmentService.markInvestment(param);
-
-        // then
-        ArgumentCaptor<Investment> captor = ArgumentCaptor.forClass(Investment.class);
-        verify(investmentMapper).markInvestment(captor.capture());
-        assertEquals(BigDecimal.ONE, captor.getValue().getProductId());
-        assertEquals(BigDecimal.TEN, captor.getValue().getUserId());
-        assertEquals(new BigDecimal("255"), captor.getValue().getInvestingAmount());
-
-        verify(investmentMapper).findById(captor.getValue().getId());
-    }
-
 
     @Test
     public void shouldPass_whenValidate_givenNormalProduct() {
-        // given
-        when(productMapper.findByProductId(BigDecimal.ONE))
+        when(productRepository.findByProductId(any()))
                 .thenReturn(Product.builder()
-                        .startedAt(LocalDateTime.now().minusDays(10))
-                        .finishedAt(LocalDateTime.now().plusDays(5))
-                        .totalInvestingAmount(new BigDecimal("10000"))
-                        .collectedInvestingAmount(new BigDecimal("100"))
+                        .startedAt(LocalDateTime.MIN)
+                        .finishedAt(LocalDateTime.MAX)
+                        .totalInvestingAmount(new BigDecimal("1000"))
+                        .collectedInvestingAmount(new BigDecimal("500"))
                         .build()
                 );
 
-        // when
-        investmentService.validateInvestment(InvestmentParam.create(BigDecimal.ONE, BigDecimal.TEN, new BigDecimal("123")));
+        InvestmentParam param = InvestmentParam.create(BigDecimal.ONE, BigDecimal.TEN, new BigDecimal("255"));
+        investmentService.validate(param);
 
-        // then
-        verify(productMapper).findByProductId(eq(BigDecimal.ONE));
     }
     @Test
-    public void shouldThrowInvalidProduct_whenValidate_givenNotExistsProduct() {
-        // when
-        InvalidInvestmentProblem problem = assertThrows(InvalidInvestmentProblem.class, () -> {
-            investmentService.validateInvestment(InvestmentParam.create(BigDecimal.ONE, BigDecimal.TEN, new BigDecimal("123")));
-        });
+    public void shouldFaildWithInvalidProduct_whenValidate_givenInvalidProduct() {
+        when(productRepository.findByProductId(any()))
+                .thenReturn(null);
 
-        // then
+        InvestmentParam param = InvestmentParam.create(BigDecimal.ONE, BigDecimal.TEN, new BigDecimal("255"));
+        InvalidInvestmentProblem problem = assertThrows(InvalidInvestmentProblem.class, () -> investmentService.validate(param));
+
         assertEquals(InvestmentError.INVALID_PRODUCT, problem.getParameters().get("error_code"));
+        verify(productRepository).findByProductId(eq(BigDecimal.ONE));
     }
-
     @Test
-    public void shouldThrowNotStarted_whenValidate_givenNotStartedProduct() {
-        // given
-        when(productMapper.findByProductId(BigDecimal.ONE))
+    public void shouldFailedWithNotStarted_whenValidate_givenNotStartedProduct() {
+        when(productRepository.findByProductId(any()))
                 .thenReturn(Product.builder()
-                        .startedAt(LocalDateTime.now().plusDays(5))
-                        .finishedAt(LocalDateTime.now().plusDays(10))
-                        .totalInvestingAmount(new BigDecimal("10000"))
-                        .collectedInvestingAmount(BigDecimal.ZERO)
+                        .startedAt(LocalDateTime.now().plusDays(2))
+                        .finishedAt(LocalDateTime.MAX)
+                        .totalInvestingAmount(new BigDecimal("1000"))
+                        .collectedInvestingAmount(new BigDecimal("500"))
                         .build()
                 );
 
-        // when
-        InvalidInvestmentProblem problem = assertThrows(InvalidInvestmentProblem.class, () -> {
-            investmentService.validateInvestment(InvestmentParam.create(BigDecimal.ONE, BigDecimal.TEN, new BigDecimal("123")));
-        });
+        InvestmentParam param = InvestmentParam.create(BigDecimal.ONE, BigDecimal.TEN, new BigDecimal("255"));
+        InvalidInvestmentProblem problem = assertThrows(InvalidInvestmentProblem.class, () -> investmentService.validate(param));
 
-        // then
         assertEquals(InvestmentError.NOT_STARTED, problem.getParameters().get("error_code"));
+        verify(productRepository).findByProductId(eq(BigDecimal.ONE));
     }
-
     @Test
-    public void shouldThrowFinished_whenValidate_givenClosedProduct() {
-        // given
-        when(productMapper.findByProductId(BigDecimal.ONE))
+    public void shouldFailedWithFinished_whenValidate_givenFinishedProduct() {
+        when(productRepository.findByProductId(any()))
                 .thenReturn(Product.builder()
-                        .startedAt(LocalDateTime.now().minusDays(10))
-                        .finishedAt(LocalDateTime.now().minusDays(5))
-                        .totalInvestingAmount(new BigDecimal("10000"))
-                        .collectedInvestingAmount(BigDecimal.ZERO)
+                        .startedAt(LocalDateTime.MIN)
+                        .finishedAt(LocalDateTime.now().minusDays(2))
+                        .totalInvestingAmount(new BigDecimal("1000"))
+                        .collectedInvestingAmount(new BigDecimal("500"))
                         .build()
                 );
 
-        // when
-        InvalidInvestmentProblem problem = assertThrows(InvalidInvestmentProblem.class, () -> {
-            investmentService.validateInvestment(InvestmentParam.create(BigDecimal.ONE, BigDecimal.TEN, new BigDecimal("123")));
-        });
+        InvestmentParam param = InvestmentParam.create(BigDecimal.ONE, BigDecimal.TEN, new BigDecimal("255"));
+        InvalidInvestmentProblem problem = assertThrows(InvalidInvestmentProblem.class, () -> investmentService.validate(param));
 
-        // then
         assertEquals(InvestmentError.FINISHED, problem.getParameters().get("error_code"));
+        verify(productRepository).findByProductId(eq(BigDecimal.ONE));
     }
 
     @Test
-    public void shouldThrowSoldout_whenValidate_givenSoldoutProduct() {
-        // given
-        when(productMapper.findByProductId(BigDecimal.ONE))
+    public void shouldFailedWithSoldout_whenValidate_givenSoldoutProduct() {
+        when(productRepository.findByProductId(any()))
                 .thenReturn(Product.builder()
-                        .startedAt(LocalDateTime.now().minusDays(10))
-                        .finishedAt(LocalDateTime.now().plusDays(5))
-                        .totalInvestingAmount(new BigDecimal("10000"))
-                        .collectedInvestingAmount(new BigDecimal("10000"))
+                        .startedAt(LocalDateTime.MIN)
+                        .finishedAt(LocalDateTime.MAX)
+                        .totalInvestingAmount(new BigDecimal("1000"))
+                        .collectedInvestingAmount(new BigDecimal("1000"))
                         .build()
                 );
 
-        // when
-        InvalidInvestmentProblem problem = assertThrows(InvalidInvestmentProblem.class, () -> {
-            investmentService.validateInvestment(InvestmentParam.create(BigDecimal.ONE, BigDecimal.TEN, new BigDecimal("123")));
-        });
+        InvestmentParam param = InvestmentParam.create(BigDecimal.ONE, BigDecimal.TEN, new BigDecimal("255"));
+        InvalidInvestmentProblem problem = assertThrows(InvalidInvestmentProblem.class, () -> investmentService.validate(param));
 
-        // then
         assertEquals(InvestmentError.SOLDOUT, problem.getParameters().get("error_code"));
+        verify(productRepository).findByProductId(eq(BigDecimal.ONE));
     }
 }

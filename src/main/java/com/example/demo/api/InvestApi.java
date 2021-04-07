@@ -9,12 +9,15 @@ import com.example.demo.service.user.vo.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import springfox.documentation.annotations.ApiIgnore;
 
+import javax.validation.Valid;
 import java.net.URI;
 
 @RestController
@@ -28,18 +31,16 @@ public class InvestApi {
     }
 
     @PostMapping
-    public ResponseEntity<Investment> invest(@RequestBody InvestmentParam investmentParam,
-                                                  @AuthenticationPrincipal User user)  {
+    public ResponseEntity<Investment> invest(@RequestBody @Valid() InvestmentParam investmentParam,
+                                             Errors errors,
+                                             @ApiIgnore @AuthenticationPrincipal(expression="user") User user)  {
         if(!user.getUserId().equals(investmentParam.getUserId())) {
             throw new InvalidInvestmentProblem(InvestmentError.UNMATCHED_USER);
         }
-        investmentService.validateInvestment(investmentParam);
-
-        boolean accepted = investmentService.tryInvestment(investmentParam);
-        if(!accepted) {
-            throw new InvalidInvestmentProblem(InvestmentError.EXCEED_LIMIT);
+        if(errors.hasErrors()) {
+            throw new InvalidInvestmentProblem(InvestmentError.INVALID_INVESTMENT_AMOUNT);
         }
-        Investment result = investmentService.markInvestment(investmentParam);
+        Investment result = investmentService.invest(investmentParam);
 
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()

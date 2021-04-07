@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import springfox.documentation.annotations.ApiIgnore;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
@@ -25,11 +26,11 @@ public class MyApi {
     }
 
     @GetMapping(path="/investments")
-    public InvestmentList queryMyInvestments(
-            @AuthenticationPrincipal User user,
+    public InvestmentList findMyInvestment(
+            @ApiIgnore @AuthenticationPrincipal(expression="user") User user,
             @RequestParam(value = "offset", defaultValue = "0") @Min(0) int offset,
             @RequestParam(value = "limit", defaultValue = "20") @Min(1) @Max(100) int limit
     ) {
-        return investmentService.queryByUser(user, new Page(offset, limit));
+        return investmentService.findByUser(user, new Page(offset, limit));
     }
 }

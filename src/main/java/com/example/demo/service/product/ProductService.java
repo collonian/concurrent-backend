@@ -1,6 +1,5 @@
 package com.example.demo.service.product;
 
-import com.example.demo.repository.mybatis.mapper.ProductMapper;
 import com.example.demo.service.Page;
 import com.example.demo.service.product.vo.Product;
 import com.example.demo.service.product.vo.ProductList;
@@ -15,19 +14,19 @@ import java.util.List;
 @Service
 @Transactional
 public class ProductService {
-    private final ProductMapper productMapper;
+    private final ProductRepository productRepository;
 
     @Autowired
-    public ProductService(ProductMapper productMapper) {
-        this.productMapper = productMapper;
+    public ProductService(ProductRepository productRepository) {
+        this.productRepository = productRepository;
     }
 
-    public ProductList queryInvestableProducts(Page page) {
+    public ProductList findInvestable(Page page) {
         LocalDateTime now = LocalDateTime.now();
-        int count = productMapper.countInvestable(now);
+        int count = productRepository.countInvestable(now);
         List<Product> products = count == 0 ?
                 Collections.emptyList() :
-                productMapper.findInvestable(now, page);
+                productRepository.findInvestable(now, page);
         return new ProductList(count, products);
     }
 }

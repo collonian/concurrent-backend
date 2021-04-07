@@ -30,7 +30,7 @@ public class SpringfoxConfig {
 
     private RequestParameter userIdHeader() {
         return new RequestParameterBuilder()
-                .name(HttpHeaderAuthenticationFilter.USER_ID_HEADER)
+                .name("X-USER-ID")
                 .description("User authentication header")
                 .in(ParameterType.HEADER)
                 .required(true)
